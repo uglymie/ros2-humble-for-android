@@ -39,7 +39,7 @@
 
 打开设置-->网络-->网络代理,方法选择手动,填写代理,最后点击应用到整个系统
 
-## 配置Android开发环境
+## 编译过程
 
 1. 配置Android SDK
    SDK可以直接下载Android studio进行配置，在初次启动Android studio时会提示用户安装必要的sdk和其他模块，一般Ubuntu下会安装在用户目录下。
@@ -77,17 +77,17 @@
    export ANDROID_NATIVE_API_LEVEL=android-29
    export ANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-clang
    ```
-   其中ANDROID相关选项可以更换
+   
+   其中ANDROID相关选项可以更换，如
+   
    ```
    export PYTHON3_EXEC="$( which python3 )"
    export PYTHON3_LIBRARY="$( ${PYTHON3_EXEC} -c 'import os.path; from distutils import sysconfig; print(os.path.realpath(os.path.join(sysconfig.get_config_var("LIBPL"), sysconfig.get_config_var("LDLIBRARY"))))' )"
    export PYTHON3_INCLUDE_DIR="$( ${PYTHON3_EXEC} -c 'from distutils import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))' )"
    export ANDROID_ABI=x86_64
-   export ANDROID_NATIVE_API_LEVEL=android-29
+   export ANDROID_NATIVE_API_LEVEL=android-21
    export ANDROID_TOOLCHAIN_NAME=x86_64-clang
    ```
-
-
 6. 编译
    
    ```
@@ -112,4 +112,30 @@
       -DRCL_LOGGING_IMPLEMENTATION=rcl_logging_noop \
       -DTHIRDPARTY_android-ifaddrs=FORCE
    ```
+   
+   此编译命令经过多次问题排查更改，已经可以避免大多数错误。但是仍然可能出现其他错误，比如找不到jni.h和jni_md.h
+   
+   ```
+   fatal error: jni.h: No such file or directory
+   ```
+   
+   解决方法: 可以添加全局搜索路径到 .bashrc 或者配置文件 /etc/profile 中，其中java-11-openjdk-amd64为当前系统已经安装的jdk版本，CPATH适用于所有语言。
+   
+   ```
+   export CPATH=/usr/lib/jvm/java-11-openjdk-amd64/include:$CPATH
+   export CPATH=/usr/lib/jvm/java-11-openjdk-amd64/include/linux:$CPATH
+   ```
+   
+   编译到Fast-DDS时可能出现找不到asio和tinyxml2的头文件，可以在其目录下的CMakeList.txt文件里添加包含头文件路径
+   ```
+   include_directories(thirdparty/asio/asio/include)
+   include_directories(thirdparty/tinyxml2)
+   ```
+   如果后续遇到其他问题再补充
+
+
+## 打包过程
+
+
+
 
